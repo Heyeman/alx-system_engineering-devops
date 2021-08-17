@@ -1,14 +1,20 @@
-# time to practice
-package {'nginx':
+# Puppet manifest to install nginx
+package { 'nginx':
+  ensure => installed,
+}
+
+file_line { 'aaaaa':
   ensure => 'present',
-}->
-exec {'Holberton':
-  command => '/bin/echo "Holberton School" > /var/www/html/index.html',
-  returns => [0,2]
-}->
-exec {'sed -i "/listen 80 default_server;/a rewrite ^/redirect_me https://youtu.be/IBH4g_ua5es permanent;" /etc/nginx/sites-available/default':
-  path => '/usr/bin:/usr/sbin:/bin',
-}->
-exec {'run':
-  command => '/usr/sbin/service nginx restart',
+  path   => '/etc/nginx/sites-available/default',
+  after  => 'listen 80 default_server;',
+  line   => 'rewrite ^/redirect_me https://www.youtube.com/watch?v=QH2-TGUlwu4 permanent;',
+}
+
+file { '/var/www/html/index.html':
+  content => 'Holberton School',
+}
+
+service { 'nginx':
+  ensure  => running,
+  require => Package['nginx'],
 }
