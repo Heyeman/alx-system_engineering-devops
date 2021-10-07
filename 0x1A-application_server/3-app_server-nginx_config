@@ -1,0 +1,71 @@
+#user  nobody;
+worker_processes  1;
+
+events {
+    worker_connections  1024;
+}
+
+
+http {
+    include       mime.types;
+    default_type  text/html;
+
+    sendfile        on;
+    keepalive_timeout  65;
+
+    server {
+        server_name web-01.biniyammelaku.tech;
+        listen 80;
+        root   /var/www/html;
+        index  index.html index.htm;
+        add_header X-Served-By $HOSTNAME;
+        # add_header X-Served-By 149-web-01;
+
+        location /redirect_me {
+            return 301 https://www.youtube.com;
+        }
+
+        error_page 404 /page404.html;
+        location = /page404.html {
+            root /usr/share/nginx/html;
+            internal;
+        }
+
+        location /hbnb_static {
+            alias /data/web_static/current/;
+            index index.html index.htm;
+        }
+
+        location /airbnb-onepage/ {
+            proxy_pass http://0.0.0.0:5000/airbnb-onepage/;
+        }
+
+        location /airbnb-dynamic/number_odd_or_even/ {
+            proxy_pass http://0.0.0.0:5001/number_odd_or_even/;
+        }        
+
+
+    listen [::]:443 ssl ipv6only=on; # managed by Certbot
+    listen 443 ssl; # managed by Certbot
+    ssl_certificate /etc/letsencrypt/live/web-01.biniyammelaku.tech/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/web-01.biniyammelaku.tech/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+
+}
+
+    server {
+    if ($host = web-01.biniyammelaku.tech) {
+        return 301 https://$host$request_uri;
+    }
+    }
+
+#   server {
+#   listen 80;
+
+#   location /airbnb-onepage/ {
+#       proxy_pass http://unix:/home/ubuntu/AirBnB_clone_v2/web_flask/app.sock;
+#   }
+#   }
+}
+
